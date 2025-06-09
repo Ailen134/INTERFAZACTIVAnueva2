@@ -13,9 +13,19 @@ awk -v N=$samples '{\
     # Promedios \
     for(i=0;i<6;i++){printf("%f ", acum[i]/N);} \
     # Desviación estándar \
-    for(i=0;i<6;i++){printf("%f ", sqrt(acum2[i]/N - (acum[i]/N)**2));} \
+    for(i=0;i<6;i++){ \
+      mean=acum[i]/N; \
+      variance=acum2[i]/N - mean*mean; \
+      if(variance<0) variance=0; \
+      printf("%f ", sqrt(variance)); \
+    } \
     # Varianza (w^2) \
-    for(i=0;i<6;i++){printf("%f ", acum2[i]/N - (acum[i]/N)**2);} \
+    for(i=0;i<6;i++){ \
+      mean=acum[i]/N; \
+      variance=acum2[i]/N - mean*mean; \
+      if(variance<0) variance=0; \
+      printf("%f ", variance); \
+    } \
     printf("\n"); \
   } \
 }' > "roughness_"$samples"samples.dat"
@@ -31,4 +41,3 @@ gnuplot -p -e "
   set ylabel 'w^2 (varianza)';
   plot '$file' using 1:13 with lines title 'w^2';
 "
-
