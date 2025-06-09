@@ -1,43 +1,25 @@
+# computes the mean and variance of the cm_*_.dat files columns
+# for instance: to plot the average of the column 4 with its error bar
+# plot "< bash prom_monitor.sh" u 0:4:(column(4+6)) w error
+
+
 files="cmlog_*_.dat"
 
-samples=$(ls $files | wc -l)
-
+samples=$(ls $files | wc -l); 
 paste $files | \
 awk -v N=$samples '{\
-  for(i=0;i<6;i++){acum[i]=0; acum2[i]=0;} \
-  for(j=1;j<=NF;j++){\
-    acum[(j-1)%6]+=$j; \
-    acum2[(j-1)%6]+=$j*$j; \
-  } \
-  if(NR>1){ \
-    # Promedios \
-    for(i=0;i<6;i++){printf("%f ", acum[i]/N);} \
-    # Desviación estándar \
-    for(i=0;i<6;i++){ \
-      mean=acum[i]/N; \
-      variance=acum2[i]/N - mean*mean; \
-      if(variance<0) variance=0; \
-      printf("%f ", sqrt(variance)); \
-    } \
-    # Varianza (w^2) \
-    for(i=0;i<6;i++){ \
-      mean=acum[i]/N; \
-      variance=acum2[i]/N - mean*mean; \
-      if(variance<0) variance=0; \
-      printf("%f ", variance); \
-    } \
-    printf("\n"); \
-  } \
+for(i=0;i<6;i++){acum[i]=0; acum2[i]=0;}; \
+for(j=1;j<=NF;j++){acum[(j-1)%6]+=$j;acum2[(j-1)%6]+=$j*$j}; \
+for(i=0;i<6;i++){\
+if(NR>1) printf("%f ",acum[i]/N);\
+}; \
+for(i=0;i<6;i++){\
+if(NR>1) printf("%f ",sqrt(acum2[i]/N - acum[i]*acum[i]/(N*N)) );\
+}; \
+if(NR>1) printf("\n") \
 }' > "roughness_"$samples"samples.dat"
 
 file="roughness_"$samples"samples.dat"
 echo $file
 
-gnuplot -p -e "
-  set term png;
-  set output 'roughness.png';
-  set logscale xy;
-  set xlabel 'Tiempo (t)';
-  set ylabel 'w^2 (varianza)';
-  plot '$file' using 1:13 with lines title 'w^2';
-"
+gnuplot -p -e "set term png; set output 'roughness.png'; set logs; plot '$file' u 4, '$file' u 4 w l"
