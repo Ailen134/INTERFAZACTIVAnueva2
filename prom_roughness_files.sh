@@ -3,7 +3,7 @@
 # plot "< bash prom_monitor.sh" u 0:4:(column(4+6)) w error
 
 
-files="cmlog_*_.dat"
+files="cm_*_.dat"
 
 samples=$(ls $files | wc -l); 
 paste $files | \
